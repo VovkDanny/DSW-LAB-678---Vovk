@@ -17,12 +17,18 @@ def main():
     
     if os.path.splitext(input_file)[1] == ".json":
         obj = loading_json(input_file)
-        save_to_json(obj, output_file)
     elif os.path.splitext(input_file)[1] in [".yml", ".yaml"]:
         obj = loading_yaml(input_file)
-        save_to_json(obj, output_file)
     else:
         print("Input file is not a JSON or YAML file.")
+        sys.exit(1)
+    
+    if os.path.splitext(output_file)[1] == ".json":
+        save_to_json(obj, output_file)
+    elif os.path.splitext(output_file)[1] in [".yml", ".yaml"]:
+        save_to_yaml(obj, output_file)
+    else:
+        print("Output file is not a JSON or YAML file.")
         sys.exit(1)
 
 def loading_json(input_file):
@@ -51,6 +57,11 @@ def loading_yaml(input_file):
 def save_to_json(obj, output_file):
     with open(output_file, "w") as file_js:
         json.dump(obj, file_js, indent=4)
+        print(f"Data has been written to {output_file}")
+
+def save_to_yaml(obj, output_file):
+    with open(output_file, "w") as file_ym:
+        yaml.dump(obj, file_ym, default_flow_style=False)
         print(f"Data has been written to {output_file}")
 
 if __name__ == "__main__":
