@@ -30,8 +30,10 @@ def main():
         save_to_json(obj, output_file)
     elif os.path.splitext(output_file)[1] in [".yml", ".yaml"]:
         save_to_yaml(obj, output_file)
+    elif os.path.splitext(output_file)[1] == ".xml":
+        save_to_xml(obj, output_file)
     else:
-        print("Output file is not a JSON or YAML file.")
+        print("Output file is not a JSON, YAML, or XML file.")
         sys.exit(1)
 
 def loading_json(input_file):
@@ -85,6 +87,29 @@ def save_to_yaml(obj, output_file):
     with open(output_file, "w") as file_ym:
         yaml.dump(obj, file_ym, default_flow_style=False)
         print(f"Data has been written to {output_file}")
+
+def dict_to_xml(tag, d):
+    element = ET.Element(tag)
+    for key, val in d.items():
+        if isinstance(val, dict):
+            child = dict_to_xml(key, val)
+        else:
+            child = ET.Element(key)
+            child.text = str(val)
+        element.append(child)
+    return element
+
+def save_to_xml(obj, output_file):
+    if len(obj) == 1:
+        root_tag = list(obj.keys())[0]
+        root_element = dict_to_xml(root_tag, obj[root_tag])
+    else:
+        print("Error: XML root element must have a single root tag.")
+        sys.exit(1)
+
+    tree = ET.ElementTree(root_element)
+    tree.write(output_file, encoding="utf-8", xml_declaration=True)
+    print(f"Data has been written to {output_file}")
 
 if __name__ == "__main__":
     main()
