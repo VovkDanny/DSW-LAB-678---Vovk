@@ -1,6 +1,7 @@
 import argparse
 import os
 import json
+import yaml
 import sys
 
 def parse_arguments():
@@ -17,8 +18,11 @@ def main():
     if os.path.splitext(input_file)[1] == ".json":
         obj = loading_json(input_file)
         save_to_json(obj, output_file)
+    elif os.path.splitext(input_file)[1] in [".yml", ".yaml"]:
+        obj = loading_yaml(input_file)
+        save_to_json(obj, output_file)
     else:
-        print("Input file is not a JSON file.")
+        print("Input file is not a JSON or YAML file.")
         sys.exit(1)
 
 def loading_json(input_file):
@@ -27,6 +31,19 @@ def loading_json(input_file):
             file_content = file_js.read()
             json_obj = json.loads(file_content)
             return json_obj
+    else:
+        print("No such file")
+        sys.exit(1)
+
+def loading_yaml(input_file):
+    if os.path.isfile(input_file):
+        try:
+            with open(input_file, "r") as file_ym:
+                yaml_obj = yaml.safe_load(file_ym)
+                return yaml_obj
+        except yaml.YAMLError as e:
+            print(f"Error parsing YAML file: {e}")
+            sys.exit(1)
     else:
         print("No such file")
         sys.exit(1)
