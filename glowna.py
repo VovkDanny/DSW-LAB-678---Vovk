@@ -4,18 +4,24 @@ import json
 import yaml
 import xml.etree.ElementTree as ET
 import sys
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_file")
-    parser.add_argument("output_file")
+    parser.add_argument("input_file", nargs='?', default=None)
+    parser.add_argument("output_file", nargs='?', default=None)
     return parser.parse_args()
 
 def main():
     args = parse_arguments()
-    input_file = args.input_file
-    output_file = args.output_file
     
+    if args.input_file and args.output_file:
+        process_files(args.input_file, args.output_file)
+    else:
+        run_gui()
+
+def process_files(input_file, output_file):
     if os.path.splitext(input_file)[1] == ".json":
         obj = loading_json(input_file)
     elif os.path.splitext(input_file)[1] in [".yml", ".yaml"]:
@@ -110,6 +116,46 @@ def save_to_xml(obj, output_file):
     tree = ET.ElementTree(root_element)
     tree.write(output_file, encoding="utf-8", xml_declaration=True)
     print(f"Data has been written to {output_file}")
+
+def run_gui():
+    root = tk.Tk()
+    root.title("File Converter")
+
+    def select_input_file():
+        file_path = filedialog.askopenfilename()
+        input_entry.delete(0, tk.END)
+        input_entry.insert(0, file_path)
+
+    def select_output_file():
+        file_path = filedialog.asksaveasfilename()
+        output_entry.delete(0, tk.END)
+        output_entry.insert(0, file_path)
+
+    def convert_files():
+        input_file = input_entry.get()
+        output_file = output_entry.get()
+        if not input_file or not output_file:
+            messagebox.showerror("Error", "Please select both input and output files.")
+            return
+        try:
+            process_files(input_file, output_file)
+            messagebox.showinfo("Success", f"Data has been written to {output_file}")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    tk.Label(root, text="Input File:").grid(row=0, column=0, padx=10, pady=5)
+    input_entry = tk.Entry(root, width=50)
+    input_entry.grid(row=0, column=1, padx=10, pady=5)
+    tk.Button(root, text="Browse", command=select_input_file).grid(row=0, column=2, padx=10, pady=5)
+
+    tk.Label(root, text="Output File:").grid(row=1, column=0, padx=10, pady=5)
+    output_entry = tk.Entry(root, width=50)
+    output_entry.grid(row=1, column=1, padx=10, pady=5)
+    tk.Button(root, text="Browse", command=select_output_file).grid(row=1, column=2, padx=10, pady=5)
+
+    tk.Button(root, text="Convert", command=convert_files).grid(row=2, columnspan=3, pady=10)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
